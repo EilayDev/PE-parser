@@ -5,15 +5,16 @@
 #include <fstream>
 #include <string>
 
-#define READ_BYTES 4096
-#define MZ_MAGIC 0x5A4D
-#define NT_SIGNATURE 0x4550
-#define MACHINE_x64 0x8664
-#define MACHINE_x86 0x014c
-#define OPTIONAL_HDRS_MAGIC_64 IMAGE_NT_OPTIONAL_HDR64_MAGIC
-#define OPTIONAL_HDRS_MAGIC_32 IMAGE_NT_OPTIONAL_HDR32_MAGIC
-#define IMAGEBASE_DLL 0x10000000
-#define IMAGEBASE_EXE 0x00400000
+#define READ_BYTES				4096
+#define MZ_MAGIC				0x5A4D
+#define NT_SIGNATURE			0x4550
+#define MACHINE_x64				0x8664
+#define MACHINE_x86				0x014c
+#define OPTIONAL_HDRS_MAGIC_64	IMAGE_NT_OPTIONAL_HDR64_MAGIC
+#define OPTIONAL_HDRS_MAGIC_32	IMAGE_NT_OPTIONAL_HDR32_MAGIC
+#define IMAGEBASE_DLL			0x10000000
+#define IMAGEBASE_EXE			0x00400000
+#define NUMBER_OF_DATA_DIRECTORIES 15
 
 int initiate();
 
@@ -31,6 +32,8 @@ public:
 	bool isCUI();
 	// is the TLS being used
 	bool isTLS_used();
+	// Get number of sections
+	int getNumberOfSections();
 
 	// Main Headers
 	IMAGE_DOS_HEADER* pDOS_Header;
@@ -58,7 +61,8 @@ public:
 	PIMAGE_DATA_DIRECTORY pDirectoryEntry_Debug;			// 6
 		// Parent -> Debug
 		IMAGE_DEBUG_DIRECTORY* pDebug_Directory;
-	PIMAGE_DATA_DIRECTORY pDirectoryEntry_Copyright;		// 7
+	PIMAGE_DATA_DIRECTORY pDirectoryEntry_Architecture;		// 7
+	PIMAGE_DATA_DIRECTORY pDirectoryEntry_Copyright;		// 7 (X86 usage)
 	PIMAGE_DATA_DIRECTORY pDirectoryEntry_GlobalPtr;		// 8
 	PIMAGE_DATA_DIRECTORY pDirectoryEntry_TLS;				// 9
 		// Parent -> TLS
@@ -70,13 +74,11 @@ public:
 		// Parent -> DelayImport
 		IMAGE_DELAYLOAD_DESCRIPTOR* pDelayLoad_Descriptor;
 	PIMAGE_DATA_DIRECTORY pDirectoryEntry_COM_Descriptor;	// 14
-
+	
+	IMAGE_SECTION_HEADER* sectionHeaders[];
 
 
 private:
 
-	struct peHandle {
-		std::ifstream file;
-	};
 
 };

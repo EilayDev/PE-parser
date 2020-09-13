@@ -16,8 +16,28 @@ pe_parser::pe_parser(LPCSTR filePath) {
 	this->pFileHeader = (IMAGE_FILE_HEADER*)&this->pNT_Header->FileHeader;
 	this->pOptional_Header = (IMAGE_OPTIONAL_HEADER*)&pNT_Header->OptionalHeader;
 	this->pDataDirectory = (IMAGE_DATA_DIRECTORY*)&this->pOptional_Header->DataDirectory;
-	this->pDirectoryEntry_TLS = (PIMAGE_DATA_DIRECTORY)this->pDataDirectory + IMAGE_DIRECTORY_ENTRY_TLS;
-
+	this->pDirectoryEntry_EXPORT =		(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_EXPORT;
+	this->pDirectoryEntry_IMPORT =		(PIMAGE_DATA_DIRECTORY)&this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_IMPORT;
+	this->pDirectoryEntry_Resource =	(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_RESOURCE;
+	this->pDirectoryEntry_Exception =	(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_EXCEPTION;
+	this->pDirectoryEntry_Security =	(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_SECURITY;
+	this->pDirectoryEntry_BaseReloc =	(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_BASERELOC;
+	this->pDirectoryEntry_Debug =		(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_DEBUG;
+	this->pDirectoryEntry_Architecture = (PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_ARCHITECTURE;
+	this->pDirectoryEntry_GlobalPtr =	(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_GLOBALPTR;
+	this->pDirectoryEntry_TLS =			(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_TLS;
+	this->pDirectoryEntry_Config =		(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG;
+	this->pDirectoryEntry_BoundImport = (PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT;
+	this->pDirectoryEntry_IAT =			(PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_IAT;
+	this->pDirectoryEntry_DelayImport = (PIMAGE_DATA_DIRECTORY)this->pDataDirectory +			IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT;
+	this->pDirectoryEntry_COM_Descriptor = (PIMAGE_DATA_DIRECTORY)this->pDataDirectory +		IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR;
+	
+	int numberOfSections(getNumberOfSections());
+	this->sectionHeaders[numberOfSections];
+	this->sectionHeaders[0] = (IMAGE_SECTION_HEADER*)((LPVOID)(this->pNT_Header + 1));
+	for (int i = 1; i < numberOfSections; i++) {
+		this->sectionHeaders[i] = (IMAGE_SECTION_HEADER*)(this->sectionHeaders[i-1] + 1);
+	}
 }
 bool pe_parser::isDll() {
 	return((this->pFileHeader->Characteristics & IMAGE_FILE_DLL) == IMAGE_FILE_DLL) ? true : false;
@@ -34,15 +54,15 @@ bool pe_parser::isGUI() {
 bool pe_parser::isTLS_used() {
 	return (this->pDirectoryEntry_TLS->VirtualAddress == NULL) ? false : true;
 }
+int pe_parser::getNumberOfSections() {
+	return (int)this->pFileHeader->NumberOfSections;
+}
+
 int main(int argc, char* argv[]) {
 	if (argc == 1) return 2;
 	pe_parser parser(argv[1]);
-	if (parser.isTLS_used()) {
-		std::cout << "Is a gui!\n";
-	}
-	else {
-		std::cout <<  "Is NOT gui!\n";
-	}
+	// Testing here
+
 	getchar();
 	return 0;
 }
