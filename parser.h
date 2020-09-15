@@ -14,6 +14,7 @@
 #define IMAGEBASE_DLL			0x10000000
 #define IMAGEBASE_EXE			0x00400000
 #define NUMBER_OF_DATA_DIRECTORIES 15
+#define MAXIMUM_EXPORTED_FUNCTIONS 4096
 	
 extern struct pe_parser {
 	pe_parser(LPCSTR filePath);
@@ -34,11 +35,13 @@ extern struct pe_parser {
 	bool isTLS_used() { // is the TLS being used
 			return (this->pDataDirectory[IMAGE_DIRECTORY_ENTRY_TLS]->VirtualAddress == NULL) ? false : true;
 	}
-	
+	bool isExporting() { // Is exporting functions
+		return (this->pDataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT]->VirtualAddress == NULL) ? false : true;
+	}
 
+	unsigned int numberOfExportedFunctions = NULL;
 	int numberOfSections;
 	size_t szFile;
-	LPVOID baseAddress = pDOS_Header;
 
 	// Main Headers
 	IMAGE_DOS_HEADER* pDOS_Header;
@@ -61,8 +64,18 @@ extern struct pe_parser {
 		PIMAGE_BOUND_IMPORT_DESCRIPTOR pBoundImport_Descriptor;
 		PIMAGE_DELAYLOAD_DESCRIPTOR pDelayLoad_Descriptor;		// Parent -> DelayImport
 	}; dataDirectory dataDirectories;
-
+	
+	struct ExportedFunction {
+		DWORD functionRVA;
+		DWORD NameOrdinal;
+		DWORD Name;
+		// dereferenced & calculated actual values
+		LPVOID de_functionRVA;
+		LPCSTR de_Name;
+	}; 
+	ExportedFunction* ExportedFunctions = new ExportedFunction[MAXIMUM_EXPORTED_FUNCTIONS];
 	IMAGE_SECTION_HEADER* sectionHeaders[];
+
 private:
-	//void locateData(int sectionNumber, DWORD dataVirtualAddress);
+	LPVOID correctAddress(DWORD VirtualAddress);
 };
